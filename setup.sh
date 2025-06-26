@@ -220,17 +220,28 @@ if [ "$CUSTOM_SELECTION" = true ]; then
     prompt_and_set_flag "Cloudflare WARP?" INSTALL_WARP
     prompt_and_set_flag "nvm (Node Version Manager)?" INSTALL_NVM
     prompt_and_set_flag "rbenv (Ruby Version Manager)?" INSTALL_RBENV
-    prompt_and_set_flag "SDKMAN (Java, Kotlin, etc.)?" INSTALL_SDKMAN
+    prompt_and_set_flag "sdkman (Java, Kotlin, etc.)?" INSTALL_SDKMAN
+    prompt_and_set_flag "pyenv (Python Version Manager)?" INSTALL_PYENV
+    prompt_and_set_flag "DBeaver Community (Database Client)?" INSTALL_DBEAVER
+    prompt_and_set_flag "Oh My Zsh (Zsh Framework)?" INSTALL_OHMYZSH
+    prompt_and_set_flag "MeetingBar (Menu Bar Calendar)?" INSTALL_MEETINGBAR
 
     echo ""
     echo "Select which entertainment apps to install (y/n):"
     prompt_and_set_flag "Spotify?" INSTALL_SPOTIFY
+    prompt_and_set_flag "VLC?" INSTALL_VLC
 
     echo ""
     echo "Select which work apps to install (y/n):"
     prompt_and_set_flag "Slack?" INSTALL_SLACK
+    prompt_and_set_flag "TradingView?" INSTALL_TRADINGVIEW
+    prompt_and_set_flag "Notion?" INSTALL_NOTION
 
     echo ""
+    echo "Select which social media/messaging apps to install (y/n):"
+    prompt_and_set_flag "WhatsApp?" INSTALL_WHATSAPP
+    prompt_and_set_flag "Discord?" INSTALL_DISCORD
+
     echo "Select which language versions to install (y/n):"
     # Node.js via nvm
     if command -v nvm &>/dev/null; then
@@ -270,13 +281,19 @@ DEVTOOLS_LIST=(
     "sdkman:custom:SDKMAN (Java, Kotlin, etc.):INSTALL_SDKMAN"
     "visual-studio-code:cask:Visual Studio Code"
     "postman:cask:Postman"
+    "pyenv:cli:pyenv"
+    "dbeaver-community:cask:DBeaver Community"
+    "oh-my-zsh:custom:Oh My Zsh"
+    "meetingbar:cli:MeetingBar"
 )
 ENTERTAINMENT_APPS_LIST=(
     "spotify:cask:Spotify:INSTALL_SPOTIFY"
+    "vlc:cask:VLC"
 )
 
 SOCIAL_MEDIA_APPS_LIST=(
     "whatsapp:cask:WhatsApp"
+    "discord:cask:Discord"
 )
 
 for entry in "${ESSENTIALS_LIST[@]}"; do
@@ -293,6 +310,7 @@ done
 WORK_APPS_LIST=(
     "slack:cask:Slack:INSTALL_SLACK"
     "tradingview:cask:TradingView"
+    "notion:cask:Notion"
 )
 
 for entry in "${DEVTOOLS_LIST[@]}"; do

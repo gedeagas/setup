@@ -55,6 +55,10 @@ Upon running the script, you'll be presented with the following options:
    - Xcodes
    - Visual Studio Code
    - Postman
+   - pyenv (Python Version Manager)
+   - DBeaver Community (Database Client)
+   - Oh My Zsh (Zsh Framework)
+   - MeetingBar (Menu Bar Calendar)
 
 4. **Programming Runtimes (Node.js, Ruby, Java)**
    Installs specific versions:
@@ -65,15 +69,18 @@ Upon running the script, you'll be presented with the following options:
 5. **Entertainment Apps**
    Installs popular entertainment applications:
    - Spotify
+   - VLC
 
 6. **Work Apps**
    Installs popular work applications:
    - Slack
    - TradingView
+   - Notion
 
 7. **Social Media and Messaging**
    Installs messaging and social media applications:
    - WhatsApp
+   - Discord
 
 8. **Custom Selection**
    Allows you to choose which tools, entertainment apps, work apps, social media/messaging apps, and language versions to install, with interactive prompts for each.
