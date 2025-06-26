@@ -33,7 +33,7 @@ This repository provides [`setup.sh`](setup.sh:1), an interactive Bash script to
 Upon running the script, you'll be presented with the following options:
 
 1. **Install All**
-   Installs essential apps, developer tools, programming runtimes, and entertainment apps.
+   Installs essential apps, developer tools, programming runtimes, entertainment apps, work apps, and social media/messaging apps.
 
 2. **Essentials Apps**
    Installs a curated set of productivity and utility applications:
@@ -41,9 +41,11 @@ Upon running the script, you'll be presented with the following options:
    - JordanBaird Ice
    - Stats CLI Tool
    - Raycast
+   - Rectangle
    - Cloudflare WARP
    - Bitwarden
    - Google Chrome
+   - Pearcleaner
 
 3. **Developer Tools**
    Installs:
@@ -51,6 +53,8 @@ Upon running the script, you'll be presented with the following options:
    - rbenv (Ruby Version Manager)
    - sdkman (Java, Kotlin, etc.)
    - Xcodes
+   - Visual Studio Code
+   - Postman
 
 4. **Programming Runtimes (Node.js, Ruby, Java)**
    Installs specific versions:
@@ -65,11 +69,16 @@ Upon running the script, you'll be presented with the following options:
 6. **Work Apps**
    Installs popular work applications:
    - Slack
+   - TradingView
 
-7. **Custom Selection**
-   Allows you to choose which tools, entertainment apps, work apps, and language versions to install, with interactive prompts for each.
+7. **Social Media and Messaging**
+   Installs messaging and social media applications:
+   - WhatsApp
 
-8. **Doctor (Check Environment)**
+8. **Custom Selection**
+   Allows you to choose which tools, entertainment apps, work apps, social media/messaging apps, and language versions to install, with interactive prompts for each.
+
+9. **Doctor (Check Environment)**
    Checks for the presence and versions of nvm, rbenv, sdkman, Node.js, Ruby, Java, and other tools. Reports status and provides troubleshooting info.
 
 ## Interactive Prompts

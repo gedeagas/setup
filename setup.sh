@@ -52,9 +52,10 @@ echo "3) Developer Tools"
 echo "4) Programming Runtimes (Node.js, Ruby, Java)"
 echo "5) Entertainment Apps"
 echo "6) Work Apps"
-echo "7) Custom Selection"
-echo "8) Doctor (Check Environment)"
-read -p "Enter your choice [1-8]: " main_choice
+echo "7) Social Media and Messaging"
+echo "8) Custom Selection"
+echo "9) Doctor (Check Environment)"
+read -p "Enter your choice [1-9]: " main_choice
 
 # Define install flags
 INSTALL_ESSENTIALS=false
@@ -69,6 +70,7 @@ case "$main_choice" in
         INSTALL_LANGVERSIONS=true
         INSTALL_ENTERTAINMENT=true
         INSTALL_WORK=true
+        INSTALL_SOCIAL_MEDIA=true
         ;;
     2)
         INSTALL_ESSENTIALS=true
@@ -86,9 +88,12 @@ case "$main_choice" in
         INSTALL_WORK=true
         ;;
     7)
-        CUSTOM_SELECTION=true
+        INSTALL_SOCIAL_MEDIA=true
         ;;
     8)
+        CUSTOM_SELECTION=true
+        ;;
+    9)
         DOCTOR_MODE=true
         ;;
     *)
@@ -204,6 +209,7 @@ INSTALL_SDKMAN=false
 INSTALL_NODE_VERSION=false
 INSTALL_RUBY_VERSION=false
 INSTALL_JAVA_VERSION=false
+INSTALL_SOCIAL_MEDIA=false
 
 if [ "$CUSTOM_SELECTION" = true ]; then
     echo ""
@@ -255,14 +261,22 @@ ESSENTIALS_LIST=(
     "cloudflare-warp:cask:Cloudflare WARP:INSTALL_WARP"
     "bitwarden:cask:Bitwarden"
     "google-chrome:cask:Google Chrome"
+    "rectangle:cask:Rectangle"
+    "pearcleaner:cask:Pearcleaner"
 )
 DEVTOOLS_LIST=(
     "nvm:custom:nvm (Node Version Manager):INSTALL_NVM"
     "rbenv:custom:rbenv (Ruby Version Manager):INSTALL_RBENV"
     "sdkman:custom:SDKMAN (Java, Kotlin, etc.):INSTALL_SDKMAN"
+    "visual-studio-code:cask:Visual Studio Code"
+    "postman:cask:Postman"
 )
 ENTERTAINMENT_APPS_LIST=(
     "spotify:cask:Spotify:INSTALL_SPOTIFY"
+)
+
+SOCIAL_MEDIA_APPS_LIST=(
+    "whatsapp:cask:WhatsApp"
 )
 
 for entry in "${ESSENTIALS_LIST[@]}"; do
@@ -278,6 +292,7 @@ done
 
 WORK_APPS_LIST=(
     "slack:cask:Slack:INSTALL_SLACK"
+    "tradingview:cask:TradingView"
 )
 
 for entry in "${DEVTOOLS_LIST[@]}"; do
@@ -354,6 +369,19 @@ for entry in "${WORK_APPS_LIST[@]}"; do
         fi
     fi
 done
+
+# Social Media and Messaging Section
+for entry in "${SOCIAL_MEDIA_APPS_LIST[@]}"; do
+    IFS=":" read -r app type name flag <<< "$entry"
+    if [ "$INSTALL_SOCIAL_MEDIA" = true ]; then
+        if [ "$type" = "cask" ]; then
+            install_cask_app "$app" "$name"
+        elif [ "$type" = "cli" ]; then
+            install_cli_tool "$app" "$name"
+        fi
+    fi
+done
+
 # -- Programming Runtimes Installs --
 if [ "$INSTALL_LANGVERSIONS" = true ]; then
     echo ""
