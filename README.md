@@ -32,34 +32,45 @@ This repository provides [`setup.sh`](setup.sh:1), an interactive Bash script to
 
 Upon running the script, you'll be presented with the following options:
 
-1. **Install All**  
-   Installs essential apps, developer tools, and programming runtimes.
+1. **Install All**
+   Installs essential apps, developer tools, programming runtimes, and entertainment apps.
 
-2. **Essentials Apps**  
+2. **Essentials Apps**
    Installs a curated set of productivity and utility applications:
    - Reminders Menu Bar
    - JordanBaird Ice
    - Stats CLI Tool
    - Raycast
    - Cloudflare WARP
+   - Bitwarden
+   - Google Chrome
 
-3. **Developer Tools**  
+3. **Developer Tools**
    Installs:
    - nvm (Node Version Manager)
    - rbenv (Ruby Version Manager)
    - sdkman (Java, Kotlin, etc.)
+   - Xcodes
 
-4. **Programming Runtimes (Node.js, Ruby, Java)**  
+4. **Programming Runtimes (Node.js, Ruby, Java)**
    Installs specific versions:
    - Node.js v18.20.7 (via nvm)
    - Ruby 3.1.6p260 (via rbenv)
    - OpenJDK 17.0.14 Zulu (via sdkman)
 
-5. **Custom Selection**  
-   Allows you to choose which tools and language versions to install, with interactive prompts for each.
+5. **Entertainment Apps**
+   Installs popular entertainment applications:
+   - Spotify
 
-6. **Doctor (Check Environment)**  
-   Checks for the presence and versions of nvm, rbenv, sdkman, Node.js, Ruby, and Java. Reports status and provides troubleshooting info.
+6. **Work Apps**
+   Installs popular work applications:
+   - Slack
+
+7. **Custom Selection**
+   Allows you to choose which tools, entertainment apps, work apps, and language versions to install, with interactive prompts for each.
+
+8. **Doctor (Check Environment)**
+   Checks for the presence and versions of nvm, rbenv, sdkman, Node.js, Ruby, Java, and other tools. Reports status and provides troubleshooting info.
 
 ## Interactive Prompts
 

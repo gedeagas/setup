@@ -50,9 +50,11 @@ echo "1) Install All"
 echo "2) Essentials Apps"
 echo "3) Developer Tools"
 echo "4) Programming Runtimes (Node.js, Ruby, Java)"
-echo "5) Custom Selection"
-echo "6) Doctor (Check Environment)"
-read -p "Enter your choice [1-6]: " main_choice
+echo "5) Entertainment Apps"
+echo "6) Work Apps"
+echo "7) Custom Selection"
+echo "8) Doctor (Check Environment)"
+read -p "Enter your choice [1-8]: " main_choice
 
 # Define install flags
 INSTALL_ESSENTIALS=false
@@ -65,6 +67,8 @@ case "$main_choice" in
         INSTALL_ESSENTIALS=true
         INSTALL_DEVTOOLS=true
         INSTALL_LANGVERSIONS=true
+        INSTALL_ENTERTAINMENT=true
+        INSTALL_WORK=true
         ;;
     2)
         INSTALL_ESSENTIALS=true
@@ -76,9 +80,15 @@ case "$main_choice" in
         INSTALL_LANGVERSIONS=true
         ;;
     5)
-        CUSTOM_SELECTION=true
+        INSTALL_ENTERTAINMENT=true
         ;;
     6)
+        INSTALL_WORK=true
+        ;;
+    7)
+        CUSTOM_SELECTION=true
+        ;;
+    8)
         DOCTOR_MODE=true
         ;;
     *)
@@ -207,6 +217,14 @@ if [ "$CUSTOM_SELECTION" = true ]; then
     prompt_and_set_flag "SDKMAN (Java, Kotlin, etc.)?" INSTALL_SDKMAN
 
     echo ""
+    echo "Select which entertainment apps to install (y/n):"
+    prompt_and_set_flag "Spotify?" INSTALL_SPOTIFY
+
+    echo ""
+    echo "Select which work apps to install (y/n):"
+    prompt_and_set_flag "Slack?" INSTALL_SLACK
+
+    echo ""
     echo "Select which language versions to install (y/n):"
     # Node.js via nvm
     if command -v nvm &>/dev/null; then
@@ -235,11 +253,16 @@ ESSENTIALS_LIST=(
     "stats:cli:Stats CLI Tool:INSTALL_STATS"
     "raycast:cask:Raycast"
     "cloudflare-warp:cask:Cloudflare WARP:INSTALL_WARP"
+    "bitwarden:cask:Bitwarden"
+    "google-chrome:cask:Google Chrome"
 )
 DEVTOOLS_LIST=(
     "nvm:custom:nvm (Node Version Manager):INSTALL_NVM"
     "rbenv:custom:rbenv (Ruby Version Manager):INSTALL_RBENV"
     "sdkman:custom:SDKMAN (Java, Kotlin, etc.):INSTALL_SDKMAN"
+)
+ENTERTAINMENT_APPS_LIST=(
+    "spotify:cask:Spotify:INSTALL_SPOTIFY"
 )
 
 for entry in "${ESSENTIALS_LIST[@]}"; do
@@ -252,6 +275,10 @@ for entry in "${ESSENTIALS_LIST[@]}"; do
         fi
     fi
 done
+
+WORK_APPS_LIST=(
+    "slack:cask:Slack:INSTALL_SLACK"
+)
 
 for entry in "${DEVTOOLS_LIST[@]}"; do
     IFS=":" read -r tool type name flag <<< "$entry"
@@ -291,7 +318,40 @@ for entry in "${DEVTOOLS_LIST[@]}"; do
                     fi
                 fi
                 ;;
+            xcodes)
+                if command -v xcodes &>/dev/null; then
+                    echo "✅ Xcodes is already installed."
+                else
+                    if prompt_install "$name"; then
+                        brew install xcodes
+                    fi
+                fi
+                ;;
         esac
+    fi
+done
+
+# Entertainment Apps Section
+for entry in "${ENTERTAINMENT_APPS_LIST[@]}"; do
+    IFS=":" read -r app type name flag <<< "$entry"
+    if [ "$INSTALL_ENTERTAINMENT" = true ] || [ "${!flag}" = true ]; then
+        if [ "$type" = "cask" ]; then
+            install_cask_app "$app" "$name"
+        elif [ "$type" = "cli" ]; then
+            install_cli_tool "$app" "$name"
+        fi
+    fi
+done
+
+# Work Apps Section
+for entry in "${WORK_APPS_LIST[@]}"; do
+    IFS=":" read -r app type name flag <<< "$entry"
+    if [ "$INSTALL_WORK" = true ] || [ "${!flag}" = true ]; then
+        if [ "$type" = "cask" ]; then
+            install_cask_app "$app" "$name"
+        elif [ "$type" = "cli" ]; then
+            install_cli_tool "$app" "$name"
+        fi
     fi
 done
 # -- Programming Runtimes Installs --
