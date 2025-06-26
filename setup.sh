@@ -40,6 +40,7 @@ is_sdkman_java_installed() {
     sdk list java | grep -q "$1"
 }
 
+main() {
 echo "🛠️  Starting macOS setup..."
 
 # Menu-driven selection
@@ -84,7 +85,6 @@ case "$main_choice" in
         echo "Invalid choice. Exiting."
         exit 1
         ;;
-
 esac
 
 # -- Doctor: Environment Check --
@@ -194,13 +194,6 @@ INSTALL_NODE_VERSION=false
 INSTALL_RUBY_VERSION=false
 INSTALL_JAVA_VERSION=false
 
-prompt_and_set_flag() {
-    local prompt="$1"
-    local var="$2"
-    read -p "$prompt (y/n): " ans
-    [[ "$ans" =~ ^[Yy]$ ]] && eval "$var=true"
-}
-
 if [ "$CUSTOM_SELECTION" = true ]; then
     echo ""
     echo "Select which tools to install (y/n):"
@@ -232,50 +225,6 @@ if [ "$CUSTOM_SELECTION" = true ]; then
         echo "⚠️  sdkman not found, skipping Java version install."
     fi
 fi
-
-# Prompt helper
-prompt_install() {
-    read -p "Do you want to install $1? (y/n): " answer
-    case "$answer" in
-        [Yy]*) return 0 ;;
-        *) echo "⏩ Skipping $1"; return 1 ;;
-    esac
-}
-
-# Install Homebrew if not installed
-if ! command -v brew &>/dev/null; then
-    echo "🍺 Homebrew not found. Installing..."
-    /bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)"
-    eval "$(/opt/homebrew/bin/brew shellenv)"
-else
-    echo "✅ Homebrew is already installed."
-fi
-
-# Install GUI app via Homebrew Cask
-install_cask_app() {
-    local app=$1
-    local name=$2
-    if brew list --cask "$app" &>/dev/null; then
-        echo "✅ $name is already installed."
-    else
-        if prompt_install "$name"; then
-            brew install --cask "$app"
-        fi
-    fi
-}
-
-# Install CLI tool via Homebrew
-install_cli_tool() {
-    local tool=$1
-    local name=$2
-    if brew list "$tool" &>/dev/null; then
-        echo "✅ $name is already installed."
-    else
-        if prompt_install "$name"; then
-            brew install "$tool"
-        fi
-    fi
-}
 
 # -- Essentials & Developer Tools (DRY) --
 ESSENTIALS_LIST=(
@@ -380,67 +329,9 @@ if [ "$INSTALL_LANGVERSIONS" = true ]; then
     echo "------------------------------"
 fi
 
-# -- Programming Runtimes Installs (DRY) --
-install_runtime() {
-    local lang="$1"
-    case "$lang" in
-        node)
-            echo ""
-            echo "⏳ Installing Node.js v$NODE_VERSION via nvm..."
-            if is_nvm_installed; then
-                export NVM_DIR="$HOME/.nvm"
-                [ -s "$NVM_DIR/nvm.sh" ] && \. "$NVM_DIR/nvm.sh"
-                if is_nvm_version_installed "$NODE_VERSION"; then
-                    echo "✅ Node.js v$NODE_VERSION is already installed via nvm."
-                else
-                    echo "⬇️  Installing Node.js v$NODE_VERSION via nvm..."
-                    nvm install "$NODE_VERSION"
-                fi
-            else
-                echo "❌ nvm not found, cannot install Node.js version."
-            fi
-            ;;
-        ruby)
-            echo ""
-            echo "⏳ Installing Ruby $RUBY_VERSION_PATCH via rbenv..."
-            if is_rbenv_installed; then
-                if is_rbenv_version_installed "$RUBY_VERSION"; then
-                    echo "✅ Ruby $RUBY_VERSION_PATCH is already installed via rbenv."
-                else
-                    echo "⬇️  Installing Ruby $RUBY_VERSION_PATCH via rbenv..."
-                    rbenv install "$RUBY_VERSION"
-                fi
-            else
-                echo "❌ rbenv not found, cannot install Ruby version."
-            fi
-            ;;
-        java)
-            echo ""
-            echo "⏳ Installing OpenJDK $JAVA_VERSION_DISPLAY ($JAVA_VENDOR_STRING) via sdkman..."
-            if is_sdkman_installed; then
-                source "$HOME/.sdkman/bin/sdkman-init.sh"
-                if sdk list java | grep -q "$JAVA_VERSION"; then
-                    if java -version 2>&1 | grep -q "$JAVA_VERSION_DISPLAY.*$JAVA_VENDOR_STRING"; then
-                        echo "✅ OpenJDK $JAVA_VERSION_DISPLAY ($JAVA_VENDOR_STRING) is already installed via sdkman."
-                    else
-                        echo "⬇️  Installing OpenJDK $JAVA_VERSION_DISPLAY ($JAVA_VENDOR_STRING) via sdkman..."
-                        sdk install java "$JAVA_VERSION"
-                    fi
-                else
-                    echo "⬇️  Installing OpenJDK $JAVA_VERSION_DISPLAY ($JAVA_VENDOR_STRING) via sdkman..."
-                    sdk install java "$JAVA_VERSION"
-                fi
-            else
-                echo "❌ sdkman not found, cannot install Java version."
-            fi
-            ;;
-    esac
-}
-
 [ "$INSTALL_NODE_VERSION" = true ] && install_runtime node
 [ "$INSTALL_RUBY_VERSION" = true ] && install_runtime ruby
 [ "$INSTALL_JAVA_VERSION" = true ] && install_runtime java
-
 
 # Final message
 echo ""
@@ -456,4 +347,11 @@ if [[ "$should_source" =~ ^[Yy]$ ]]; then
 else
     echo "⚠️  Remember to run: source ~/.zshrc before using tools like nvm."
 fi
+}
+
+# Only run main if script is executed, not sourced
+if [[ "${BASH_SOURCE[0]}" == "${0}" ]]; then
+  main "$@"
+fi
+
 
