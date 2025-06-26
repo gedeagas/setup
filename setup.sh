@@ -187,6 +187,7 @@ fi
 INSTALL_REMINDERS=false
 INSTALL_ICE=false
 INSTALL_STATS=false
+INSTALL_WARP=false
 INSTALL_NVM=false
 INSTALL_RBENV=false
 INSTALL_SDKMAN=false
@@ -200,6 +201,7 @@ if [ "$CUSTOM_SELECTION" = true ]; then
     prompt_and_set_flag "Reminders Menu Bar?" INSTALL_REMINDERS
     prompt_and_set_flag "JordanBaird Ice?" INSTALL_ICE
     prompt_and_set_flag "Stats CLI Tool?" INSTALL_STATS
+    prompt_and_set_flag "Cloudflare WARP?" INSTALL_WARP
     prompt_and_set_flag "nvm (Node Version Manager)?" INSTALL_NVM
     prompt_and_set_flag "rbenv (Ruby Version Manager)?" INSTALL_RBENV
     prompt_and_set_flag "SDKMAN (Java, Kotlin, etc.)?" INSTALL_SDKMAN
@@ -232,6 +234,7 @@ ESSENTIALS_LIST=(
     "jordanbaird-ice:cask:JordanBaird Ice:INSTALL_ICE"
     "stats:cli:Stats CLI Tool:INSTALL_STATS"
     "raycast:cask:Raycast"
+    "cloudflare-warp:cask:Cloudflare WARP:INSTALL_WARP"
 )
 DEVTOOLS_LIST=(
     "nvm:custom:nvm (Node Version Manager):INSTALL_NVM"

@@ -41,6 +41,7 @@ Upon running the script, you'll be presented with the following options:
    - JordanBaird Ice
    - Stats CLI Tool
    - Raycast
+   - Cloudflare WARP
 
 3. **Developer Tools**  
    Installs:
