@@ -45,7 +45,34 @@ prompt_install_all_or_individual() {
     read -p "Install all $category_name? (y/n): " all_ans
     echo "[DEBUG] User answered: $all_ans"
 
-    # Helper: install a single entry immediately
+    # Helper: check if an entry is already installed
+    local is_installed
+    is_installed() {
+        local app="$1"
+        local type="$2"
+        case "$type" in
+            cask)
+                brew list --cask "$app" &>/dev/null
+                ;;
+            cli)
+                brew list "$app" &>/dev/null
+                ;;
+            custom)
+                case "$app" in
+                    nvm) [ -d "$HOME/.nvm" ] ;;
+                    rbenv) command -v rbenv &>/dev/null ;;
+                    sdkman) [ -d "$HOME/.sdkman" ] ;;
+                    oh-my-zsh) [ -d "$HOME/.oh-my-zsh" ] ;;
+                    *) return 1 ;;
+                esac
+                ;;
+            *)
+                return 1
+                ;;
+        esac
+    }
+
+    # Helper: install a single entry immediately, only if not already installed
     local install_entry
     install_entry() {
         local app="$1"
@@ -57,51 +84,38 @@ prompt_install_all_or_individual() {
             echo "Installing $category_name..."
             _printed_category=1
         fi
+        if is_installed "$app" "$type"; then
+            echo "✅ $name is already installed."
+            return
+        fi
         if [ "$type" = "cask" ]; then
             install_cask_app "$app" "$name"
         elif [ "$type" = "cli" ]; then
             install_cli_tool "$app" "$name"
         elif [ "$type" = "custom" ]; then
-            # Custom install logic for devtools
             case "$app" in
                 nvm)
-                    if [ -d "$HOME/.nvm" ]; then
-                        echo "✅ nvm is already installed."
-                    else
-                        echo "⬇️  Installing nvm..."
-                        curl -o- https://raw.githubusercontent.com/nvm-sh/nvm/v0.40.3/install.sh | bash
-                        {
-                            echo ''
-                            echo 'export NVM_DIR="$HOME/.nvm"'
-                            echo '[ -s "$NVM_DIR/nvm.sh" ] && \. "$NVM_DIR/nvm.sh"'
-                        } >> ~/.zshrc
-                    fi
+                    echo "⬇️  Installing nvm..."
+                    curl -o- https://raw.githubusercontent.com/nvm-sh/nvm/v0.40.3/install.sh | bash
+                    {
+                        echo ''
+                        echo 'export NVM_DIR="$HOME/.nvm"'
+                        echo '[ -s "$NVM_DIR/nvm.sh" ] && \. "$NVM_DIR/nvm.sh"'
+                    } >> ~/.zshrc
                     ;;
                 rbenv)
-                    if command -v rbenv &>/dev/null; then
-                        echo "✅ rbenv is already installed."
-                    else
-                        echo "⬇️  Installing rbenv..."
-                        brew install rbenv
-                        echo 'eval \"$(rbenv init -)\"' >> ~/.zshrc
-                    fi
+                    echo "⬇️  Installing rbenv..."
+                    brew install rbenv
+                    echo 'eval "$(rbenv init -)"' >> ~/.zshrc
                     ;;
                 sdkman)
-                    if [ -d "$HOME/.sdkman" ]; then
-                        echo "✅ SDKMAN is already installed."
-                    else
-                        echo "⬇️  Installing SDKMAN..."
-                        curl -s \"https://get.sdkman.io\" | bash
-                        echo 'source \"$HOME/.sdkman/bin/sdkman-init.sh\"' >> ~/.zshrc
-                    fi
+                    echo "⬇️  Installing SDKMAN..."
+                    curl -s "https://get.sdkman.io" | bash
+                    echo 'source "$HOME/.sdkman/bin/sdkman-init.sh"' >> ~/.zshrc
                     ;;
                 oh-my-zsh)
-                    if [ -d "$HOME/.oh-my-zsh" ]; then
-                        echo "✅ Oh My Zsh is already installed."
-                    else
-                        echo "⬇️  Installing Oh My Zsh..."
-                        sh -c \"$(curl -fsSL https://raw.githubusercontent.com/ohmyzsh/ohmyzsh/master/tools/install.sh)\" \"\" --unattended
-                    fi
+                    echo "⬇️  Installing Oh My Zsh..."
+                    sh -c "$(curl -fsSL https://raw.githubusercontent.com/ohmyzsh/ohmyzsh/master/tools/install.sh)" "" --unattended
                     ;;
             esac
         fi
@@ -110,7 +124,7 @@ prompt_install_all_or_individual() {
     if [[ "$all_ans" =~ ^[Yy]$ ]]; then
         eval "$category_flag=true"
         echo "[DEBUG] Set $category_flag to true"
-        # Install all entries immediately
+        # Install all entries immediately, skip if already installed
         local entry app type name flag
         eval "entries=(\"\${${list_var}[@]}\")"
         for entry in "${entries[@]}"; do
@@ -125,6 +139,11 @@ prompt_install_all_or_individual() {
         eval "entries=(\"\${${list_var}[@]}\")"
         for entry in "${entries[@]}"; do
             IFS=":" read -r app type name flag <<< "$entry"
+            # Only prompt if not already installed
+            if is_installed "$app" "$type"; then
+                echo "✅ $name is already installed."
+                continue
+            fi
             prompt_and_set_flag "Install $name?" "$flag"
             if [ "${!flag}" = true ]; then
                 install_entry "$app" "$type" "$name"
@@ -559,10 +578,15 @@ main() {
             IFS=":" read -r app type name flag <<< "$entry"
             prompt_and_set_flag "$name?" "$flag"
             if [ "${!flag}" = true ]; then
-                if [ "$type" = "cask" ]; then
-                    install_cask_app "$app" "$name"
-                elif [ "$type" = "cli" ]; then
-                    install_cli_tool "$app" "$name"
+                # Check if already installed
+                if (brew list --cask "$app" &>/dev/null) || (brew list "$app" &>/dev/null); then
+                    echo "✅ $name is already installed."
+                else
+                    if [ "$type" = "cask" ]; then
+                        install_cask_app "$app" "$name"
+                    elif [ "$type" = "cli" ]; then
+                        install_cli_tool "$app" "$name"
+                    fi
                 fi
             fi
         done
@@ -571,16 +595,30 @@ main() {
             IFS=":" read -r app type name flag <<< "$entry"
             prompt_and_set_flag "$name?" "$flag"
             if [ "${!flag}" = true ]; then
+                # Check if already installed
+                already_installed=false
                 if [ "$type" = "cask" ]; then
-                    install_cask_app "$app" "$name"
+                    brew list --cask "$app" &>/dev/null && already_installed=true
                 elif [ "$type" = "cli" ]; then
-                    install_cli_tool "$app" "$name"
+                    brew list "$app" &>/dev/null && already_installed=true
                 elif [ "$type" = "custom" ]; then
                     case "$app" in
-                        nvm)
-                            if [ -d "$HOME/.nvm" ]; then
-                                echo "✅ nvm is already installed."
-                            else
+                        nvm) [ -d "$HOME/.nvm" ] && already_installed=true ;;
+                        rbenv) command -v rbenv &>/dev/null && already_installed=true ;;
+                        sdkman) [ -d "$HOME/.sdkman" ] && already_installed=true ;;
+                        oh-my-zsh) [ -d "$HOME/.oh-my-zsh" ] && already_installed=true ;;
+                    esac
+                fi
+                if [ "$already_installed" = true ]; then
+                    echo "✅ $name is already installed."
+                else
+                    if [ "$type" = "cask" ]; then
+                        install_cask_app "$app" "$name"
+                    elif [ "$type" = "cli" ]; then
+                        install_cli_tool "$app" "$name"
+                    elif [ "$type" = "custom" ]; then
+                        case "$app" in
+                            nvm)
                                 echo "⬇️  Installing nvm..."
                                 curl -o- https://raw.githubusercontent.com/nvm-sh/nvm/v0.40.3/install.sh | bash
                                 {
@@ -588,35 +626,23 @@ main() {
                                     echo 'export NVM_DIR=\"$HOME/.nvm\"'
                                     echo '[ -s \"$NVM_DIR/nvm.sh\" ] && \. \"$NVM_DIR/nvm.sh\"'
                                 } >> ~/.zshrc
-                            fi
-                            ;;
-                        rbenv)
-                            if command -v rbenv &>/dev/null; then
-                                echo "✅ rbenv is already installed."
-                            else
+                                ;;
+                            rbenv)
                                 echo "⬇️  Installing rbenv..."
                                 brew install rbenv
                                 echo 'eval \"$(rbenv init -)\"' >> ~/.zshrc
-                            fi
-                            ;;
-                        sdkman)
-                            if [ -d \"$HOME/.sdkman\" ]; then
-                                echo \"✅ SDKMAN is already installed.\"
-                            else
-                                echo \"⬇️  Installing SDKMAN...\"
+                                ;;
+                            sdkman)
+                                echo "⬇️  Installing SDKMAN..."
                                 curl -s \"https://get.sdkman.io\" | bash
                                 echo 'source \"$HOME/.sdkman/bin/sdkman-init.sh\"' >> ~/.zshrc
-                            fi
-                            ;;
-                        oh-my-zsh)
-                            if [ -d \"$HOME/.oh-my-zsh\" ]; then
-                                echo \"✅ Oh My Zsh is already installed.\"
-                            else
-                                echo \"⬇️  Installing Oh My Zsh...\"
+                                ;;
+                            oh-my-zsh)
+                                echo "⬇️  Installing Oh My Zsh..."
                                 sh -c \"$(curl -fsSL https://raw.githubusercontent.com/ohmyzsh/ohmyzsh/master/tools/install.sh)\" \"\" --unattended
-                            fi
-                            ;;
-                    esac
+                                ;;
+                        esac
+                    fi
                 fi
             fi
         done
@@ -627,10 +653,14 @@ main() {
             IFS=":" read -r app type name flag <<< "$entry"
             prompt_and_set_flag "$name?" "$flag"
             if [ "${!flag}" = true ]; then
-                if [ "$type" = "cask" ]; then
-                    install_cask_app "$app" "$name"
-                elif [ "$type" = "cli" ]; then
-                    install_cli_tool "$app" "$name"
+                if (brew list --cask "$app" &>/dev/null) || (brew list "$app" &>/dev/null); then
+                    echo "✅ $name is already installed."
+                else
+                    if [ "$type" = "cask" ]; then
+                        install_cask_app "$app" "$name"
+                    elif [ "$type" = "cli" ]; then
+                        install_cli_tool "$app" "$name"
+                    fi
                 fi
             fi
         done
@@ -641,10 +671,14 @@ main() {
             IFS=":" read -r app type name flag <<< "$entry"
             prompt_and_set_flag "$name?" "$flag"
             if [ "${!flag}" = true ]; then
-                if [ "$type" = "cask" ]; then
-                    install_cask_app "$app" "$name"
-                elif [ "$type" = "cli" ]; then
-                    install_cli_tool "$app" "$name"
+                if (brew list --cask "$app" &>/dev/null) || (brew list "$app" &>/dev/null); then
+                    echo "✅ $name is already installed."
+                else
+                    if [ "$type" = "cask" ]; then
+                        install_cask_app "$app" "$name"
+                    elif [ "$type" = "cli" ]; then
+                        install_cli_tool "$app" "$name"
+                    fi
                 fi
             fi
         done
@@ -655,10 +689,14 @@ main() {
             IFS=":" read -r app type name flag <<< "$entry"
             prompt_and_set_flag "$name?" "$flag"
             if [ "${!flag}" = true ]; then
-                if [ "$type" = "cask" ]; then
-                    install_cask_app "$app" "$name"
-                elif [ "$type" = "cli" ]; then
-                    install_cli_tool "$app" "$name"
+                if (brew list --cask "$app" &>/dev/null) || (brew list "$app" &>/dev/null); then
+                    echo "✅ $name is already installed."
+                else
+                    if [ "$type" = "cask" ]; then
+                        install_cask_app "$app" "$name"
+                    elif [ "$type" = "cli" ]; then
+                        install_cli_tool "$app" "$name"
+                    fi
                 fi
             fi
         done
@@ -737,14 +775,7 @@ main() {
     echo "🔁 Tools like nvm, rbenv, and sdkman require reloading your shell configuration."
 
     # Offer to source .zshrc
-    read -p "Would you like to source your ~/.zshrc now to apply changes? (y/n): " should_source
-    if [[ "$should_source" =~ ^[Yy]$ ]]; then
-        echo "📦 Sourcing ~/.zshrc..."
-        source ~/.zshrc
-        echo "✅ Environment updated!"
-    else
-        echo "⚠️  Remember to run: source ~/.zshrc before using tools like nvm."
-    fi
+    echo "⚠️  Remember to run: source ~/.zshrc before using tools like nvm."
 }
 
 # Only run main if script is executed, not sourced
